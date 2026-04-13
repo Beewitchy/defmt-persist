@@ -35,6 +35,9 @@ default = [
 ]
 async-await = [ ]
 rtt = [ ]
+# Adds esp-flash marker bits to the beginning of each frame, and enables
+# rzcobs encoding which is also required
+esp-flash = ["defmt/encoding-rzcobs"]
 # Adds ECC cache flush for MCUs with ECC-protected RAM (32-bit or 64-bit),
 # such as some STM32 series (e.g., STM32H7, STM32H5).
 #

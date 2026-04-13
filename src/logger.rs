@@ -120,6 +120,9 @@ unsafe impl defmt::Logger for Logger {
 
         compiler_fence(Ordering::SeqCst);
 
+        #[cfg(feature = "esp-flash")]
+        unsafe { write_all(&[0xFF, 0x00]) }
+
         // SAFETY: We're in a critical section, so exclusive access to `encoder` is guaranteed.
         // The callback to `write_all` is also within the critical section.
         unsafe { &mut *LOGGER_STATE.encoder.get() }.start_frame(|b| unsafe { write_all(b) });
