@@ -12,7 +12,7 @@ pub use ring_buffer::{Consumer, GrantR};
 #[cfg(feature = "async-await")]
 pub(crate) mod atomic_waker;
 pub(crate) mod logger;
-mod ring_buffer;
+pub mod ring_buffer;
 
 /// Error returned by [`init`] when initialization fails.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, defmt::Format)]
@@ -61,8 +61,12 @@ pub struct ConsumerAndMetadata<'a> {
 ///
 /// Corrupt memory may be accepted as valid. While index bounds are validated,
 /// the data content is not. Treat recovered logs as untrusted external input.
-pub fn init() -> Result<ConsumerAndMetadata<'static>, InitError> {
+pub fn init(
+    #[cfg(feature = "declare-memory-in-rust")]
+    memory: core::ops::Range<usize>,
+) -> Result<ConsumerAndMetadata<'static>, InitError> {
     // SAFETY: These symbols are provided by the linker script and point to a reserved memory region.
+    #[cfg(not(feature = "declare-memory-in-rust"))]
     unsafe extern "C" {
         static __defmt_persist_start: u8;
         static __defmt_persist_end: u8;
@@ -74,13 +78,17 @@ pub fn init() -> Result<ConsumerAndMetadata<'static>, InitError> {
         return Err(InitError::AlreadyInitialized);
     }
 
-    let start = (&raw const __defmt_persist_start).expose_provenance();
-    let end = (&raw const __defmt_persist_end).expose_provenance();
-    let memory = start..end;
+    #[cfg(not(feature = "declare-memory-in-rust"))]
+    let memory = {
+        let start = (&raw const __defmt_persist_start).expose_provenance();
+        let end = (&raw const __defmt_persist_end).expose_provenance();
+        start..end
+    };
 
     if !memory.start.is_multiple_of(align_of::<RingBuffer>()) {
         return Err(InitError::BadAlignment);
     }
+
     if memory.len() <= size_of::<RingBuffer>() {
         return Err(InitError::TooSmall);
     }

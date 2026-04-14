@@ -22,6 +22,7 @@ default = [
     "rtt",
     "async-await",
     "ecc",
+    "declare-memory-in-rust",
     # NOTE(defmt-persist): It is *strongly* recommended to use the rzcobs encoding when
     # using this crate. If the buffer is ever filled, then the remaining
     # bytes will be discarded, which will corrupt the message stream.
@@ -38,6 +39,8 @@ rtt = [ ]
 # Adds esp-flash marker bits to the beginning of each frame, and enables
 # rzcobs encoding which is also required
 esp-flash = ["defmt/encoding-rzcobs"]
+# Use rust defined memory rather than linker symbols, e.g. with #[esp_hal::ram]
+declare-memory-in-rust = [ ]
 # Adds ECC cache flush for MCUs with ECC-protected RAM (32-bit or 64-bit),
 # such as some STM32 series (e.g., STM32H7, STM32H5).
 #
