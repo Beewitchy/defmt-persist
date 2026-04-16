@@ -13,8 +13,11 @@ categories = ["embedded", "no-std"]
 repository = "https://github.com/korken89/defmt-persist"
 
 [dependencies]
-defmt = "1.0.1"
-critical-section = "1.2"
+defmt = "1.0"
+critical-section = { version = "1.2" }
+esp-hal = { version = "1.0", optional = true }
+esp-sync = { version = "0.1", optional = true }
+embassy-sync = { version = "0.8", optional = true }
 cortex-m-semihosting = { version = "0.5", optional = true }
 
 [features]
@@ -22,7 +25,6 @@ default = [
     "rtt",
     "async-await",
     "ecc",
-    "declare-memory-in-rust",
     # NOTE(defmt-persist): It is *strongly* recommended to use the rzcobs encoding when
     # using this crate. If the buffer is ever filled, then the remaining
     # bytes will be discarded, which will corrupt the message stream.
@@ -32,13 +34,15 @@ default = [
     # When using the "raw" encoding, you MUST ensure that the buffer is
     # never overfilled, as it will NOT be possible to recover from this
     # error condition.
-    "defmt/encoding-rzcobs"
+    "defmt/encoding-rzcobs",
 ]
 async-await = [ ]
 rtt = [ ]
 # Adds esp-flash marker bits to the beginning of each frame, and enables
 # rzcobs encoding which is also required
 esp-flash = ["defmt/encoding-rzcobs"]
+# Use esp-sync directly instead of critical-section: better multi-core support
+esp-sync = ["dep:esp-hal", "dep:esp-sync", "dep:embassy-sync"]
 # Use rust defined memory rather than linker symbols, e.g. with #[esp_hal::ram]
 declare-memory-in-rust = [ ]
 # Adds ECC cache flush for MCUs with ECC-protected RAM (32-bit or 64-bit),

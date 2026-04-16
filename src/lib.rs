@@ -11,6 +11,7 @@ pub use ring_buffer::{Consumer, GrantR};
 
 #[cfg(feature = "async-await")]
 pub(crate) mod atomic_waker;
+pub(crate) mod sync;
 pub(crate) mod logger;
 pub mod ring_buffer;
 

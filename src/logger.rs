@@ -4,7 +4,7 @@ use core::{
     mem::MaybeUninit,
     sync::atomic::{AtomicBool, AtomicUsize, Ordering, compiler_fence},
 };
-use critical_section::RestoreState;
+use crate::sync::RestoreState;
 use defmt::Encoder;
 
 #[cfg(feature = "rtt")]
@@ -109,7 +109,7 @@ unsafe impl defmt::Logger for Logger {
         // SAFETY: This is the start of a logging operation. The critical section
         // will be released in `release()`. It's safe to acquire here as defmt
         // guarantees balanced acquire/release calls.
-        let restore = unsafe { critical_section::acquire() };
+        let restore = unsafe { crate::sync::acquire() };
 
         // Compiler fence ensures the critical section is fully entered before
         // we access shared state.
@@ -154,7 +154,7 @@ unsafe impl defmt::Logger for Logger {
 
         // SAFETY: We read the restore state that was saved in `acquire()` and release
         // the critical section. The critical section guarantees exclusive access to `cs_state`.
-        unsafe { critical_section::release(LOGGER_STATE.cs_state.get().read()) };
+        unsafe { crate::sync::release(LOGGER_STATE.cs_state.get().read()) };
 
         compiler_fence(Ordering::SeqCst);
 
