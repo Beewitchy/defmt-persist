@@ -428,7 +428,7 @@ impl Consumer<'_> {
 
     #[cfg(feature = "async-await")]
     /// Waits until there is data in the [`Consumer`].
-    pub async fn wait_for_data(&mut self) {
+    pub fn wait_for_data(&mut self) -> impl Future {
         core::future::poll_fn(|cx| {
             super::logger::WAKER.register(cx.waker());
 
@@ -438,7 +438,6 @@ impl Consumer<'_> {
                 core::task::Poll::Ready(())
             }
         })
-        .await
     }
 }
 
